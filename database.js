@@ -60,7 +60,24 @@ var db = (function () {
           }
         }
       });
+    },
 
+    get_chapter: function(translation, book, chapter, res) {
+      pg.connect(bibleConnectionString, function(err, bibleclient, done) {
+          if (err) {
+            console.log('Error in connection: ' + err);
+          } else {
+            var query_string = 'SELECT string_agg(content, \'\' ORDER BY vers) as verses FROM verses WHERE translation=\'' + translation + '\' AND book=\'' + book + '\' AND chapter=' + chapter + ';';
+            bibleclient.query(query_string, function(err, result) {
+                if(err) {
+                  console.log('Error in query: '+err);
+                } else {
+                  console.log(result.rows[0].verses);
+                  res.end(result.rows[0].verses);
+                }
+            });
+          }
+      });
     }
   };
 }());

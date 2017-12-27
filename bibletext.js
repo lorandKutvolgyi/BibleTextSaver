@@ -15,7 +15,7 @@ var books_abbrev = ["1Moz", "2Moz", "3Moz", "4Moz", "5Moz", "Jozs", "Bir", "Rut"
             "1Kor", "2Kor", "Gal","Ef", "Fil", "Kol", "1Tesz", "2Tesz",
             "1Tim", "2Tim", "Tit", "Filem", "Zsid", "Jak", "1Pét", "2Pét", "1Jan", "2Jan", "3Ján",
             "Jud", "Jel"];
-var translations = ['RUF', 'KG'];
+var translations = ['KG', 'RUF'];
 
 var i = 0;
 var j = 1;
@@ -30,7 +30,6 @@ var escape = function(text) {
 }
 
 var is_notexisting_chapter = function(data) {
-  console.log(data);
   return JSON.parse(data).valasz.versek.length === 0;
 }
 
@@ -49,6 +48,7 @@ var process_data = function(data) {
   while (k < num_of_verses){
     var row = [books[i], j, k, escape(JSON.parse(data).valasz.versek[k].szoveg), translation];
     rows.push(row);
+    console.log(k);
     k = k + 1;
   }
 };
@@ -75,8 +75,6 @@ var getBibleText = function(){
                   getBibleText();
                 }, 0);
               }else {
-                console.log(rows);
-                database.db.update_db(rows);
                 if (is_there_more_translation(m)) {
                   translation = translations[++m];
                   i = 0;
@@ -84,10 +82,15 @@ var getBibleText = function(){
                   setTimeout ( function() {
                     getBibleText();
                   }, 60000);
+                } else {
+                  database.db.update_db(rows);
                 }
               }
             } else {
               process_data(data);
+              console.log(translation);
+              console.log(books[i]);
+              console.log(j);
               j = j + 1;
               uri_fragment = books_abbrev[i]+j;
               setTimeout ( function() {
