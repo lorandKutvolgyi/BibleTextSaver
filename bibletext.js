@@ -51,6 +51,8 @@ var process_data = function(data) {
     console.log(k);
     k = k + 1;
   }
+  database.db.update_db(rows);
+  rows = [];
 };
 
 var getBibleText = function(){
@@ -81,9 +83,7 @@ var getBibleText = function(){
                   j = 1;
                   setTimeout ( function() {
                     getBibleText();
-                  }, 60000);
-                } else {
-                  database.db.update_db(rows);
+                  }, 0);
                 }
               }
             } else {

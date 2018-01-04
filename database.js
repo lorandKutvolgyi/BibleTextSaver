@@ -9,6 +9,7 @@ var create_chapters = 'CREATE TABLE chapters(book varchar(50) not null, chapter 
 var create_parts_of_books = 'CREATE TABLE parts_of_books(book varchar(50) not null, start_chapter integer not null, end_chapter integer not null, title varchar(100) not null, notes varchar(4000));';
 var create_books = 'CREATE TABLE books(book varchar(50) not null, notes varchar(4000));';
 
+
 var db = (function () {
 
   var create_tables = function(callback) {
@@ -25,6 +26,7 @@ var db = (function () {
               }
           });
         }
+        done();
     });
   };
 
@@ -34,12 +36,15 @@ var db = (function () {
           if (!err) {
             if (overwrite){
                client.query('DROP DATABASE bible;');
+               client.query('CREATE DATABASE bible;', function(err, result) {
+                 create_tables(callback);
+               });
+            } else {
+              callback();
             }
-            client.query('CREATE DATABASE bible;', function(err, result) {
-              done();
-              create_tables(callback);
-            });
+
           }
+          done();
       });
     },
 
@@ -59,6 +64,7 @@ var db = (function () {
               });
           }
         }
+        done();
       });
     },
 
@@ -67,7 +73,7 @@ var db = (function () {
           if (err) {
             console.log('Error in connection: ' + err);
           } else {
-            var query_string = 'SELECT string_agg(content, \'\' ORDER BY vers) as verses FROM verses WHERE translation=\'' + translation + '\' AND book=\'' + book + '\' AND chapter=' + chapter + ';';
+            var query_string = 'SELECT string_agg(content, \'\' ORDER BY vers) as verses FROM verses WHERE translation=\'' + translation + '\' AND book=\'' + book + '\' AND chapter=' + chapter + ' ;';
             bibleclient.query(query_string, function(err, result) {
                 if(err) {
                   console.log('Error in query: '+err);
@@ -77,6 +83,26 @@ var db = (function () {
                 }
             });
           }
+          done();
+      });
+    },
+
+    getChaptersNumber: function(translation, book, res) {
+      pg.connect(bibleConnectionString, function(err, bibleclient, done) {
+        if (err) {
+          console.log('Error in connection: ' + err);
+        } else {
+          var query_string = 'SELECT max(chapter) as count FROM verses WHERE translation=\'' + translation + '\' AND book=\'' + book + '\' GROUP BY translation, book;';
+          bibleclient.query(query_string, function(err, result) {
+              if(err) {
+                console.log('Error in query: '+err);
+              } else {
+                console.log(result.rows[0].count);
+                res.end(result.rows[0].count.toString());
+              }
+          });
+        }
+        done();
       });
     }
   };
